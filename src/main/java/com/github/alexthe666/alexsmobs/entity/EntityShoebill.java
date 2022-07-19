@@ -1,6 +1,5 @@
 package com.github.alexthe666.alexsmobs.entity;
 
-import com.github.alexthe666.alexsmobs.block.AMBlockRegistry;
 import com.github.alexthe666.alexsmobs.config.AMConfig;
 import com.github.alexthe666.alexsmobs.entity.ai.*;
 import com.github.alexthe666.alexsmobs.item.AMItemRegistry;
@@ -13,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.animal.Animal;
@@ -154,10 +154,6 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
         this.targetSelector.addGoal(1, new EntityAINearestTarget3D(this, AbstractFish.class, 30, false, true, null));
         this.targetSelector.addGoal(2, new CreatureAITargetItems(this, false, 10));
         this.targetSelector.addGoal(3, (new HurtByTargetGoal(this, Player.class)).setAlertOthers());
-        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, EntityAlligatorSnappingTurtle.class, 40, false, false, TARGET_BABY));
-        this.targetSelector.addGoal(5, new NearestAttackableTargetGoal(this, Turtle.class, 40, false, false, TARGET_BABY));
-        this.targetSelector.addGoal(6, new NearestAttackableTargetGoal(this, EntityCrocodile.class, 40, false, false, TARGET_BABY));
-        this.targetSelector.addGoal(7, new EntityAINearestTarget3D(this, EntityTerrapin.class, 100, false, true, null));
 
     }
 
@@ -291,52 +287,6 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
         return new Animation[]{ANIMATION_FISH, ANIMATION_BEAKSHAKE, ANIMATION_ATTACK};
     }
 
-    public InteractionResult mobInteract(Player p_230254_1_, InteractionHand p_230254_2_) {
-        ItemStack lvt_3_1_ = p_230254_1_.getItemInHand(p_230254_2_);
-         if (lvt_3_1_.getItem() == AMBlockRegistry.TERRAPIN_EGG.get().asItem() && this.isAlive()) {
-             if(this.luckLevel < 10) {
-                 luckLevel = Mth.clamp(luckLevel + 1, 0, 10);
-                 for (int i = 0; i < 6 + random.nextInt(3); i++) {
-                     double d2 = this.random.nextGaussian() * 0.02D;
-                     double d0 = this.random.nextGaussian() * 0.02D;
-                     double d1 = this.random.nextGaussian() * 0.02D;
-                     this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, lvt_3_1_), this.getX() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, this.getY() + this.getBbHeight() * 0.5F + (double) (this.random.nextFloat() * this.getBbHeight() * 0.5F), this.getZ() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, d0, d1, d2);
-                 }
-                 this.playSound(SoundEvents.CAT_EAT, this.getSoundVolume(), this.getVoicePitch());
-                 lvt_3_1_.shrink(1);
-                 return net.minecraft.world.InteractionResult.sidedSuccess(this.level.isClientSide);
-             }else{
-                 if(this.getAnimation() == NO_ANIMATION){
-                     this.setAnimation(ANIMATION_BEAKSHAKE);
-                 }
-                 return InteractionResult.SUCCESS;
-             }
-         } else if (lvt_3_1_.getItem() == AMBlockRegistry.CROCODILE_EGG.get().asItem() && this.isAlive()) {
-             if(this.lureLevel < 10){
-                 lureLevel = Mth.clamp(lureLevel + 1, 0, 10);
-                 fishingCooldown = Mth.clamp(fishingCooldown - 200, 200, 2400);
-                 for (int i = 0; i < 6 + random.nextInt(3); i++) {
-                     double d2 = this.random.nextGaussian() * 0.02D;
-                     double d0 = this.random.nextGaussian() * 0.02D;
-                     double d1 = this.random.nextGaussian() * 0.02D;
-                     this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, lvt_3_1_), this.getX() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, this.getY() + this.getBbHeight() * 0.5F + (double) (this.random.nextFloat() * this.getBbHeight() * 0.5F), this.getZ() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, d0, d1, d2);
-                 }
-                 lvt_3_1_.shrink(1);
-                 this.playSound(SoundEvents.CAT_EAT, this.getSoundVolume(), this.getVoicePitch());
-                 return net.minecraft.world.InteractionResult.sidedSuccess(this.level.isClientSide);
-             }else{
-                 if(this.getAnimation() == NO_ANIMATION){
-                     this.setAnimation(ANIMATION_BEAKSHAKE);
-                 }
-                 return InteractionResult.SUCCESS;
-             }
-
-         } else {
-            return super.mobInteract(p_230254_1_, p_230254_2_);
-        }
-    }
-
-
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverWorld, AgeableMob ageableEntity) {
@@ -345,7 +295,7 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
 
     @Override
     public boolean canTargetItem(ItemStack stack) {
-        return stack.is(AMTagRegistry.SHOEBILL_FOODSTUFFS) || stack.getItem() == AMItemRegistry.BLOBFISH.get() && luckLevel < 10 || stack.getItem() == AMBlockRegistry.CROCODILE_EGG.get().asItem() && lureLevel < 10;
+        return stack.is(AMTagRegistry.SHOEBILL_FOODSTUFFS);
     }
 
     public void resetFishingCooldown(){
@@ -354,12 +304,6 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
     @Override
     public void onGetItem(ItemEntity e) {
         this.playSound(SoundEvents.CAT_EAT, this.getSoundVolume(), this.getVoicePitch());
-        if(e.getItem().getItem() == AMItemRegistry.BLOBFISH.get()){
-            luckLevel = Mth.clamp(luckLevel + 1, 0, 10);
-        }
-        if(e.getItem().getItem() == AMBlockRegistry.CROCODILE_EGG.get().asItem()){
-            lureLevel = Mth.clamp(lureLevel + 1, 0, 10);
-        }
         this.heal(5);
     }
 }
