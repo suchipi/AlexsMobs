@@ -1,49 +1,36 @@
 package com.github.suchipi.alexsshoebill.entity;
 
-import com.github.suchipi.alexsshoebill.config.AMConfig;
-import com.github.suchipi.alexsshoebill.entity.ai.*;
-import com.github.suchipi.alexsshoebill.item.AMItemRegistry;
-import com.github.suchipi.alexsshoebill.misc.AMSoundRegistry;
-import com.github.suchipi.alexsshoebill.misc.AMTagRegistry;
+import java.util.List;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
 import com.github.alexthe666.citadel.animation.Animation;
 import com.github.alexthe666.citadel.animation.AnimationHandler;
 import com.github.alexthe666.citadel.animation.IAnimatedEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.MoveControl;
-import net.minecraft.world.entity.ai.control.FlyingMoveControl;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.Turtle;
-import net.minecraft.world.entity.animal.AbstractFish;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
+import com.github.suchipi.alexsshoebill.config.AMConfig;
+import com.github.suchipi.alexsshoebill.entity.ai.AnimalAIWadeSwimming;
+import com.github.suchipi.alexsshoebill.entity.ai.CreatureAITargetItems;
+import com.github.suchipi.alexsshoebill.entity.ai.DirectPathNavigator;
+import com.github.suchipi.alexsshoebill.entity.ai.EntityAINearestTarget3D;
+import com.github.suchipi.alexsshoebill.entity.ai.FlightMoveController;
+import com.github.suchipi.alexsshoebill.entity.ai.GroundPathNavigatorWide;
+import com.github.suchipi.alexsshoebill.entity.ai.ShoebillAIFish;
+import com.github.suchipi.alexsshoebill.entity.ai.ShoebillAIFlightFlee;
+import com.github.suchipi.alexsshoebill.misc.AMSoundRegistry;
+import com.github.suchipi.alexsshoebill.misc.AMTagRegistry;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.core.particles.ItemParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.util.*;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.function.Predicate;
-
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -52,13 +39,30 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.AbstractFish;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsDroppedItems {
 
@@ -95,15 +99,15 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
     }
 
     protected SoundEvent getAmbientSound() {
-        return AMSoundRegistry.SHOBILL_RATTLE;
+        return AMSoundRegistry.SHOEBILL_RATTLE;
     }
 
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return AMSoundRegistry.SHOBILL_RATTLE;
+        return AMSoundRegistry.SHOEBILL_RATTLE;
     }
 
     protected SoundEvent getDeathSound() {
-        return AMSoundRegistry.SHOBILL_RATTLE;
+        return AMSoundRegistry.SHOEBILL_RATTLE;
     }
 
     public boolean isFood(ItemStack stack) {
@@ -287,6 +291,52 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
         return new Animation[]{ANIMATION_FISH, ANIMATION_BEAKSHAKE, ANIMATION_ATTACK};
     }
 
+    public InteractionResult mobInteract(Player p_230254_1_, InteractionHand p_230254_2_) {
+        ItemStack lvt_3_1_ = p_230254_1_.getItemInHand(p_230254_2_);
+         if ((lvt_3_1_.getItem() == Items.PUFFERFISH || lvt_3_1_.getItem() == Items.PUFFERFISH_BUCKET) && this.isAlive()) {
+             if(this.luckLevel < 10) {
+                 luckLevel = Mth.clamp(luckLevel + 1, 0, 10);
+                 for (int i = 0; i < 6 + random.nextInt(3); i++) {
+                     double d2 = this.random.nextGaussian() * 0.02D;
+                     double d0 = this.random.nextGaussian() * 0.02D;
+                     double d1 = this.random.nextGaussian() * 0.02D;
+                     this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, lvt_3_1_), this.getX() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, this.getY() + this.getBbHeight() * 0.5F + (double) (this.random.nextFloat() * this.getBbHeight() * 0.5F), this.getZ() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, d0, d1, d2);
+                 }
+                 this.playSound(SoundEvents.CAT_EAT, this.getSoundVolume(), this.getVoicePitch());
+                 lvt_3_1_.shrink(1);
+                 return net.minecraft.world.InteractionResult.sidedSuccess(this.level.isClientSide);
+             }else{
+                 if(this.getAnimation() == NO_ANIMATION){
+                     this.setAnimation(ANIMATION_BEAKSHAKE);
+                 }
+                 return InteractionResult.SUCCESS;
+             }
+         } else if (lvt_3_1_.getItem() == Items.TURTLE_EGG && this.isAlive()) {
+             if(this.lureLevel < 10){
+                 lureLevel = Mth.clamp(lureLevel + 1, 0, 10);
+                 fishingCooldown = Mth.clamp(fishingCooldown - 200, 200, 2400);
+                 for (int i = 0; i < 6 + random.nextInt(3); i++) {
+                     double d2 = this.random.nextGaussian() * 0.02D;
+                     double d0 = this.random.nextGaussian() * 0.02D;
+                     double d1 = this.random.nextGaussian() * 0.02D;
+                     this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, lvt_3_1_), this.getX() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, this.getY() + this.getBbHeight() * 0.5F + (double) (this.random.nextFloat() * this.getBbHeight() * 0.5F), this.getZ() + (double) (this.random.nextFloat() * this.getBbWidth()) - (double) this.getBbWidth() * 0.5F, d0, d1, d2);
+                 }
+                 lvt_3_1_.shrink(1);
+                 this.playSound(SoundEvents.CAT_EAT, this.getSoundVolume(), this.getVoicePitch());
+                 return net.minecraft.world.InteractionResult.sidedSuccess(this.level.isClientSide);
+             }else{
+                 if(this.getAnimation() == NO_ANIMATION){
+                     this.setAnimation(ANIMATION_BEAKSHAKE);
+                 }
+                 return InteractionResult.SUCCESS;
+             }
+
+         } else {
+            return super.mobInteract(p_230254_1_, p_230254_2_);
+        }
+    }
+
+
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverWorld, AgeableMob ageableEntity) {
@@ -295,7 +345,7 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
 
     @Override
     public boolean canTargetItem(ItemStack stack) {
-        return stack.is(AMTagRegistry.SHOEBILL_FOODSTUFFS);
+        return stack.is(AMTagRegistry.SHOEBILL_FOODSTUFFS) || stack.getItem() == Items.PUFFERFISH && luckLevel < 10 || stack.getItem() == Items.TURTLE_EGG && lureLevel < 10;
     }
 
     public void resetFishingCooldown(){
@@ -304,6 +354,12 @@ public class EntityShoebill extends Animal implements IAnimatedEntity, ITargetsD
     @Override
     public void onGetItem(ItemEntity e) {
         this.playSound(SoundEvents.CAT_EAT, this.getSoundVolume(), this.getVoicePitch());
+        if(e.getItem().getItem() == Items.PUFFERFISH){
+            luckLevel = Mth.clamp(luckLevel + 1, 0, 10);
+        }
+        if(e.getItem().getItem() == Items.TURTLE_EGG){
+            lureLevel = Mth.clamp(lureLevel + 1, 0, 10);
+        }
         this.heal(5);
     }
 }

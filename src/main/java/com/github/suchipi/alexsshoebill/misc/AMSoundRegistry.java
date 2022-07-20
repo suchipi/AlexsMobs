@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 @Mod.EventBusSubscriber(modid = AlexsShoebill.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class AMSoundRegistry {
 
-    public static final SoundEvent SHOBILL_RATTLE = createSoundEvent("shoebill_rattle");
+    public static final SoundEvent SHOEBILL_RATTLE = createSoundEvent("shoebill_rattle");
 
     private static SoundEvent createSoundEvent(final String soundName) {
         final ResourceLocation soundID = new ResourceLocation(AlexsShoebill.MODID, soundName);
