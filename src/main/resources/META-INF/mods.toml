@@ -1,15 +1,15 @@
 modLoader="javafml" #mandatory
 loaderVersion="[40,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 license="GNU LESSER GENERAL PUBLIC LICENSE"
-issueTrackerURL="https://github.com/Alex-the-666/AlexsMobs/issues" #optional
+issueTrackerURL="https://github.com/suchipi/AlexsShoebill/issues" #optional
 [[mods]] #mandatory
-modId="alexsmobs" #mandatory
+modId="alexsshoebill" #mandatory
 version="1.18.6" #mandatory
-displayName="Alex's Mobs" #mandatory
-displayURL="https://www.curseforge.com/minecraft/mc-mods/alexs-mobs" #optional
+displayName="Alex's Shoebill" #mandatory
+displayURL="https://github.com/suchipi/AlexsShoebill" #optional
 authors="Alexthe668, Carro1001" #optional
-description='''New, original, engaging, and aesthetic mobs for Minecraft.'''
-[[dependencies.alexsmobs]] #optional
+description='''The shoebills from Alex's Mobs.'''
+[[dependencies.alexsshoebill]] #optional
     # the modid of the dependency
     modId="citadel" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -20,11 +20,11 @@ description='''New, original, engaging, and aesthetic mobs for Minecraft.'''
     ordering="AFTER"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     side="BOTH"
-[[dependencies.alexsmobs]]
+[[dependencies.alexsshoebill]]
     modId="forge"
     mandatory=true
     versionRange="[36.0.42,)"
     ordering="NONE"
     side="BOTH"
-[modproperties.alexsmobs]
-    catalogueItemIcon="alexsmobs:cosmic_cod"
+[modproperties.alexsshoebill]
+    catalogueItemIcon="alexsshoebill:cosmic_cod"

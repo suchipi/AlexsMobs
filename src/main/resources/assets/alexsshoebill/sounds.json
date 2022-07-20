@@ -1,0 +1,17 @@
+{
+  "shoebill_rattle": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "alexsshoebill:shoebill_rattle_0"
+      },
+      {
+        "name": "alexsshoebill:shoebill_rattle_1"
+      },
+      {
+        "name": "alexsshoebill:shoebill_rattle_2"
+      }
+    ],
+    "subtitle": "alexsshoebill.sound.subtitle.shoebill_rattle"
+  }
+}

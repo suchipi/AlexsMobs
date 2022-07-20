@@ -39,7 +39,7 @@ apply plugin: 'maven-publish'
 
 version = '1.18.6'
 group = 'com.github.alexthe667' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'alexsmobs'
+archivesBaseName = 'alexsshoebill'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -129,12 +129,12 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "alexsmobs",
-            "Specification-Vendor": "alexthe668",
+            "Specification-Title": "alexsshoebill",
+            "Specification-Vendor": "suchipi",
             "Specification-Version": "1.17.0", // We are version 1 of ourselves
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"alexthe668",
+            "Implementation-Vendor" :"suchipi",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
